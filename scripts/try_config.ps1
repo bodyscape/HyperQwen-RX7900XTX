@@ -1,7 +1,7 @@
 # Essaie une configuration de test: ajoute des lignes a hyperqwen\.env, redemarre le serveur, execute un banc, puis remet .env.
 # Usage: .\try_config.ps1 -ExtraArgs '--prefix-match-unit 128' -Tag cacheA [-Bench labd|none]
 param([string]$ExtraArgs = '', [string]$Tag = 'try', [string]$Bench = 'labd', [int]$Ctx = 40000, [string]$GpuUtil = '', [string[]]$EnvLines = @())
-$Root = 'E:\git\HyperQwen-7900XTX'
+$Root = 'E:\git\HyperQwen-RX7900XTX'
 $f = "$Root\hyperqwen\.env"
 $orig = Get-Content $f
 try {

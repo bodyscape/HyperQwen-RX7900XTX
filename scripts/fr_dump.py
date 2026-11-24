@@ -1,7 +1,7 @@
 """Sauvegarde les sorties greedy (T=0, 400 tokens) des prompts francais de fr_bench.py: python fr_dump.py <tag>"""
 import json, sys, urllib.request
 sys.argv_tag = sys.argv[1]
-exec(open('E:/git/HyperQwen-7900XTX/scripts/fr_bench.py', encoding='utf-8').read().split('def metrics')[0])  # prompts, BASE
+exec(open('E:/git/HyperQwen-RX7900XTX/scripts/fr_bench.py', encoding='utf-8').read().split('def metrics')[0])  # prompts, BASE
 
 
 def ask(p):
@@ -11,5 +11,5 @@ def ask(p):
     return json.load(r)["choices"][0]["message"]["content"]
 
 
-json.dump([ask(p) for p in prompts], open(f'E:/git/HyperQwen-7900XTX/scripts/frdump_{sys.argv[1]}.json', 'w', encoding='utf-8'), ensure_ascii=False)
+json.dump([ask(p) for p in prompts], open(f'E:/git/HyperQwen-RX7900XTX/scripts/frdump_{sys.argv[1]}.json', 'w', encoding='utf-8'), ensure_ascii=False)
 print('ok', sys.argv[1])

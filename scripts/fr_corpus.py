@@ -31,7 +31,7 @@ def ask(p):
         return None
 
 
-out = open('E:/git/HyperQwen-7900XTX/scripts/fr_corpus.jsonl', 'w', encoding='utf-8')
+out = open('E:/git/HyperQwen-RX7900XTX/scripts/fr_corpus.jsonl', 'w', encoding='utf-8')
 n = 0
 with cf.ThreadPoolExecutor(4) as ex:
     for txt in ex.map(ask, prompts):

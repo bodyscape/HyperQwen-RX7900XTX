@@ -4,4 +4,4 @@ services:
       HQ_TIMING: "1"
       PYTHONPATH: /opt/hqtiming
     volumes:
-      - E:\git\HyperQwen-7900XTX\scripts\hqtiming:/opt/hqtiming:ro
+      - E:\git\HyperQwen-RX7900XTX\scripts\hqtiming:/opt/hqtiming:ro

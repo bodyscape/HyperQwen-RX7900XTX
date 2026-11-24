@@ -1,9 +1,9 @@
 """A chaque point de divergence entre frdump_old et frdump_new, probabilites du modele (T=0, un token) pour les mots en concurrence."""
 import json, sys, math, urllib.request
 sys.stdout.reconfigure(encoding='utf-8')
-exec(open('E:/git/HyperQwen-7900XTX/scripts/fr_bench.py', encoding='utf-8').read().split('def metrics')[0])  # prompts, BASE
-old = json.load(open('E:/git/HyperQwen-7900XTX/scripts/frdump_old.json', encoding='utf-8'))
-new = json.load(open('E:/git/HyperQwen-7900XTX/scripts/frdump_new.json', encoding='utf-8'))
+exec(open('E:/git/HyperQwen-RX7900XTX/scripts/fr_bench.py', encoding='utf-8').read().split('def metrics')[0])  # prompts, BASE
+old = json.load(open('E:/git/HyperQwen-RX7900XTX/scripts/frdump_old.json', encoding='utf-8'))
+new = json.load(open('E:/git/HyperQwen-RX7900XTX/scripts/frdump_new.json', encoding='utf-8'))
 for i, (x, y) in enumerate(zip(old, new)):
     if x == y:
         print(i, 'identique'); continue

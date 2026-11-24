@@ -3,4 +3,4 @@ services:
     environment:
       LD_LIBRARY_PATH: /rocr/out:/opt/rocm/lib:/usr/local/lib:/usr/lib/wsl/lib
     volumes:
-      - E:\git\HyperQwen-7900XTX\rocr-patch\out:/rocr/out:ro
+      - E:\git\HyperQwen-RX7900XTX\rocr-patch\out:/rocr/out:ro

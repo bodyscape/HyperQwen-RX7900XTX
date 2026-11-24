@@ -1,6 +1,6 @@
-# HyperQwen-7900XTX: working folder
+# HyperQwen-RX7900XTX: working folder
 
-The whole port of HyperQwen to the RX 7900 XTX, in `E:\git\HyperQwen-7900XTX`. The repository is in `hyperqwen\`: it
+The whole port of HyperQwen to the RX 7900 XTX, in `E:\git\HyperQwen-RX7900XTX`. The repository is in `hyperqwen\`: it
 holds the shipped code (launcher `start-rocm.sh`, `Dockerfile.rocm`, kernels in `rocm/`, patch
 `patches/rocm-w4a16-gemv.patch`, doc `docs/rocm.md`, example `.env.rocm.example`) and the models (`models\`).
 
@@ -121,7 +121,7 @@ longer used: the `hyperqwen-rocm:local` image now contains the GEMV and the pref
 
 ## Restarting HyperQwen
 
-From `E:\git\HyperQwen-7900XTX\hyperqwen` (the Docker project name stays `hyperqwen`, so the build cache
+From `E:\git\HyperQwen-RX7900XTX\hyperqwen` (the Docker project name stays `hyperqwen`, so the build cache
 `hyperqwen_qwen-cache` and the image `hyperqwen-rocm:local` are reused):
 
 ```powershell

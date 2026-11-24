@@ -1,5 +1,5 @@
 import re
-p='E:/git/HyperQwen-7900XTX/hyperqwen/patches/rocm-w4a16-gemv.patch'
+p='E:/git/HyperQwen-RX7900XTX/hyperqwen/patches/rocm-w4a16-gemv.patch'
 s=open(p,newline='').read()
 crlf='\r\n' in s
 s=s.replace('\r\n','\n')

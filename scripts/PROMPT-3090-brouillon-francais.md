@@ -1,6 +1,6 @@
 # Prompt pour l'agent de la RTX 3090 : liste de brouillon MTP completee en francais
 
-Contexte : sur le port RX 7900 XTX de HyperQwen (E:\git\HyperQwen-7900XTX), un changement ne touchant QUE les donnees du modele (3 fichiers) a donne +24 a +29 % de vitesse de decodage sur du texte francais, sans perte de qualite. Ta mission : verifier si le meme gain existe sur la RTX 3090 et l'appliquer proprement. Ne modifie rien d'autre (pas de .env, pas de docker-compose.yml, pas de noyaux, pas de patches).
+Contexte : sur le port RX 7900 XTX de HyperQwen (E:\git\HyperQwen-RX7900XTX), un changement ne touchant QUE les donnees du modele (3 fichiers) a donne +24 a +29 % de vitesse de decodage sur du texte francais, sans perte de qualite. Ta mission : verifier si le meme gain existe sur la RTX 3090 et l'appliquer proprement. Ne modifie rien d'autre (pas de .env, pas de docker-compose.yml, pas de noyaux, pas de patches).
 
 ## 1. Le probleme
 

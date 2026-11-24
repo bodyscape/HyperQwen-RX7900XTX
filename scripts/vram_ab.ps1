@@ -1,6 +1,6 @@
 # Compare la VRAM prise par vLLM avec le runtime ROCm patche (defaut) et avec HQ_ROCR_PATCH=0, whisper arrete.
 # Deux demarrages complets (~2,5 min chacun). Remet .env dans son etat d'origine a la fin.
-$Root = 'E:\git\HyperQwen-7900XTX'
+$Root = 'E:\git\HyperQwen-RX7900XTX'
 $Repo = "$Root\hyperqwen"
 $envFile = "$Repo\.env"
 $orig = Get-Content $envFile
