@@ -1,0 +1,10 @@
+PRET apres 130 s:  http://127.0.0.1:19020/v1   (modele: qwen3.8-27b)
+    raise FileNotFoundError(path)
+FileNotFoundError: /app/bench/quality-data/gsm8k/main/test-00000-of-00001.parquet
+LABD wmma copy     prompt= 44946 out= 220 steps=   92 tok/step= 2.39 decode=  87.6 e2e=   5.0 ttft=41.92s
+LABD wmma code     prompt= 44943 out= 512 steps=  146 tok/step= 3.51 decode= 129.6 e2e=  91.8 ttft= 1.63s
+LABD wmma edit     prompt= 44946 out= 512 steps=  168 tok/step= 3.04 decode= 117.9 e2e=  87.4 ttft= 1.52s
+LABD wmma quote    prompt= 44945 out= 512 steps=  148 tok/step= 3.47 decode= 131.5 e2e=  95.6 ttft= 1.47s
+LABD wmma summary  prompt= 44939 out= 512 steps=  206 tok/step= 2.48 decode=  92.9 e2e=  72.8 ttft= 1.53s
+LABD wmma qa       prompt= 44940 out= 512 steps=  205 tok/step= 2.49 decode=  93.3 e2e=  73.0 ttft= 1.53s
+LABD wmma TOTAL out=2780 steps=965 tok/step=2.88 decode=108.4 tok/s

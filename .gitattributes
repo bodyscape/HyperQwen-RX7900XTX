@@ -1,0 +1,6 @@
+# Les scripts shell tournent sous Linux (conteneur) : toujours LF, quelle que soit la machine qui clone.
+# hyperqwen/ a son propre .gitattributes (LF partout).
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+*.bat text eol=crlf

@@ -1,0 +1,30 @@
+HyperQwen n'est pas en marche.
+Arrete.
+VRAM utilisee maintenant: 3,2 Go sur 24 (le reste: bureau Windows et autres programmes)
+HyperQwen: GPU_UTIL=0.75  MAX_LEN=32768  adresse=127.0.0.1:19020
+VRAM: 20,7 Go libres, 18,0 Go demandes par vLLM
+Demarrage du conteneur...
+ Container hyperqwen-prepare-rocm-1 Recreate 
+ Container hyperqwen-prepare-rocm-1 Recreated 
+ Container hyperqwen-rocm-1 Recreate 
+ Container hyperqwen-rocm-1 Recreated 
+ Container hyperqwen-prepare-rocm-1 Starting 
+ Container hyperqwen-prepare-rocm-1 Started 
+ Container hyperqwen-prepare-rocm-1 Waiting 
+ Container hyperqwen-prepare-rocm-1 Exited 
+ Container hyperqwen-rocm-1 Starting 
+ Container hyperqwen-rocm-1 Started 
+..........................
+PRET apres 130 s:  http://127.0.0.1:19020/v1   (modele: qwen3.8-27b)
+Arret: stop-hyperqwen.ps1
+  vLLM: Setting attention block size to 2176 tokens to ensure that attention page size is >= mamba page size.
+  vLLM: GPU KV cache size: 58,789 tokens, Maximum concurrency for 32,768 tokens per request: 1.79x
+ROW cohort C1 real prompts T=default | e2e=103.28 tok/s | decode(C/meanTPOT)=106.3 | tok/step=2.56 | meanTTFT=216.68 ms
+ROW cohort C2 real prompts T=default | e2e=166.08 tok/s | decode(C/meanTPOT)=178.1 | tok/step=2.51 | meanTTFT=269.82 ms
+ROW cohort C4 real prompts T=default | e2e=294.95 tok/s | decode(C/meanTPOT)=320.0 | tok/step=2.50 | meanTTFT=369.09 ms
+ROW cohort C8 real prompts T=default | e2e=277.37 tok/s | decode(C/meanTPOT)=641.0 | tok/step=2.49 | meanTTFT=7170.33 ms
+ROW cohort C1 real prompts T=0 | e2e=106.89 tok/s | decode(C/meanTPOT)=110.5 | tok/step=2.64 | meanTTFT=214.20 ms
+ROW cohort C2 real prompts T=0 | e2e=166.43 tok/s | decode(C/meanTPOT)=187.6 | tok/step=2.57 | meanTTFT=269.92 ms
+ROW cohort C4 real prompts T=0 | e2e=288.31 tok/s | decode(C/meanTPOT)=339.0 | tok/step=2.65 | meanTTFT=382.05 ms
+ROW cohort C8 real prompts T=0 | e2e=286.09 tok/s | decode(C/meanTPOT)=657.4 | tok/step=2.54 | meanTTFT=6953.72 ms
+--- .env remis

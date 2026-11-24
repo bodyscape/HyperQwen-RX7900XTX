@@ -1,0 +1,24 @@
+__pycache__/
+api_key.txt
+bench/quality-data/
+bench/results/
+bench/results-prefill-ab/
+models/
+profiles/
+qwen.log
+venv/
+drafter/data/
+drafter/runs/
+.env
+# local reproduction artifacts (symlinks here, so no trailing slash)
+venv
+models
+api_key.txt
+bench/results/
+# fa2/build.py run in place, instead of through fa2/install.sh
+fa2/build-*/
+fa2/third_party/
+fa2/python/**/*.so
+
+# Turing launcher server logs
+/logs/

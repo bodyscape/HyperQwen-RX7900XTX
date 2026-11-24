@@ -1,0 +1,5 @@
+services:
+  rocm:
+    volumes:
+      - <SCRATCHPAD>\gemm\out\w4a16_gemv.so:/opt/hq/w4a16_gemv.so:ro
+      - <SCRATCHPAD>\src\rdna3_w4a16.py:/usr/local/lib/python3.12/dist-packages/vllm/model_executor/kernels/linear/mixed_precision/rdna3_w4a16.py:ro

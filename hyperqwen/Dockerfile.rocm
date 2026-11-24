@@ -1,0 +1,88 @@
+# HyperQwen on an AMD Radeon RX 7900 XTX (RDNA3, gfx1100) through ROCm. See docs/rocm.md.
+#
+# Same stack as the NVIDIA Dockerfile where it can be: vLLM 0.33.0, every patch in patches/ applied,
+# the KVarN KV cache installed, verify.sh --install and the CPU tests run at build time. What is not
+# here, because it is CUDA-only: the pth-flash-attn kernel (pthfa/), the fp8-KV FA2 plugin (fa2/),
+# FlashInfer, the Marlin W4A8 path and the LSA plugin.
+#
+# The base image is vLLM's own ROCm 7.2 build (system ROCm 7.2.3, torch 2.13, Python 3.12). Not the
+# default ROCm 10.0 tag: on WSL2 its librocdxg 1.1.0 does not export hsaKmtGetDefaultHostGpu, which
+# its libhsa-runtime64 asks for, and the process dies with a segfault when torch initialises. The 7.2
+# build has an older libhsa without that requirement, and takes librocdxg 1.2.2 from AMD's release
+# (below). Native Linux does not use librocdxg at all (/dev/kfd).
+#
+#   docker compose --profile rocm up -d        (see docs/rocm.md)
+FROM vllm/vllm-openai-rocm:v0.33.0-rocm72
+
+ENV DEBIAN_FRONTEND=noninteractive PYTHONUNBUFFERED=1
+
+# patch applies patches/series; flock serialises docker/prepare.sh; curl is the healthcheck.
+RUN for t in patch flock curl; do command -v "$t" >/dev/null || NEED="$NEED $t"; done; \
+    if [ -n "${NEED:-}" ]; then apt-get update && apt-get install -y --no-install-recommends patch util-linux curl ca-certificates \
+      && rm -rf /var/lib/apt/lists/*; fi
+
+# librocdxg: the user-mode bridge from ROCm to the Windows GPU driver (WSL2, Docker Desktop). 185 KB,
+# no dependencies, installs /opt/rocm/lib/librocdxg.so.1.2.2. Pinned by digest. It is inert on a host
+# with /dev/kfd. 1.2.2 needs the ROCm 7.x libhsa-runtime64 of this base image (see the comment above).
+ARG DXG_URL=https://github.com/ROCm/librocdxg/releases/download/v1.2.2/rocdxg-roct_1.2.2_amd64.deb
+ARG DXG_SHA256=28ded1254811192ebace1f76c0227580184af7b27ab2475fb9728295a702d541
+RUN curl -fsSL -o /tmp/rocdxg.deb "$DXG_URL" \
+    && echo "$DXG_SHA256  /tmp/rocdxg.deb" | sha256sum -c - \
+    && dpkg -i /tmp/rocdxg.deb && rm /tmp/rocdxg.deb && ldconfig
+# libdxcore.so comes from the host (Docker Desktop mounts /usr/lib/wsl, docker-compose.yml does too).
+ENV LD_LIBRARY_PATH=/opt/rocm/lib:/usr/local/lib:/usr/lib/wsl/lib
+
+WORKDIR /app
+# The launchers, verify.sh and docker/prepare.sh all run venv/bin/{python,vllm,hf}. This image has vLLM
+# in the system Python, so /app/venv is a venv that sees it (--system-site-packages) with the two
+# console scripts linked in. Nothing is installed into it.
+RUN python3 -m venv --system-site-packages --without-pip venv \
+    && ln -sf "$(command -v vllm)" venv/bin/vllm \
+    && { command -v hf >/dev/null && ln -sf "$(command -v hf)" venv/bin/hf || echo "note: no hf CLI in the base image"; } \
+    && venv/bin/python -c 'import vllm, torch; print("venv sees vllm", vllm.__version__, "torch", torch.__version__, "hip", torch.version.hip)'
+
+COPY . .
+# patches/apply.sh reads the apply order from patches/series and applies it with --fuzz 0. Every patch
+# applies on this wheel (checked against the 0.33.0 ROCm 7.2 image); the NVIDIA-only ones (Marlin,
+# FlashInfer, SM75, CUDA UVA) change nothing unless their env knob is set, and start-rocm.sh never sets it.
+# bench/mq3d_scratch_pool_test.py imports the patched triton_attn.py and runs on CPU tensors, so the
+# build is where CI can run it. The pthfa/, fa2/ and lsa/ gate tests are not run, nor is
+# bench/test_quant_scale_views.py (it imports the pth_flash_attn backend): those plugins are not here.
+RUN set -e; SP=$(venv/bin/python -c 'import vllm, os; print(os.path.dirname(vllm.__file__))' | tail -n1); \
+    bash patches/apply.sh "$SP"; \
+    bash kvarn/install.sh; \
+    bash verify.sh --install; \
+    venv/bin/python bench/test_draft_vocab_stats.py; \
+    venv/bin/python bench/test_gdn_checkpoint_safety.py; \
+    venv/bin/python bench/test_gdn_multi_checkpoint.py; \
+    venv/bin/python bench/test_gdn_checkpoint_export.py; \
+    venv/bin/python bench/test_offload_mamba_swa_boundaries.py; \
+    venv/bin/python bench/test_dflash_context_capacity.py; \
+    venv/bin/python bench/mq3d_scratch_pool_test.py; \
+    CUDA_VISIBLE_DEVICES= HIP_VISIBLE_DEVICES= venv/bin/python bench/test_async_mamba_kv_sizing.py; \
+    CUDA_VISIBLE_DEVICES= HIP_VISIBLE_DEVICES= venv/bin/python bench/test_kv_cache_seat_budget.py; \
+    CUDA_VISIBLE_DEVICES= HIP_VISIBLE_DEVICES= venv/bin/python bench/test_continuous_stream_usage.py; \
+    venv/bin/python bench/test_gdn_ba_lora.py
+
+# The W4A16 GEMV for up to 8 rows (rocm/w4a16_gemv.cu, routed to by patches/rocm-w4a16-gemv.patch). It needs
+# hipcc and the torch headers, not a GPU, so it builds here. A failed build only costs the speed: the patched
+# kernel file falls back to gptq_gemm_rdna3 when /opt/hq/w4a16_gemv.so is missing.
+RUN PYTORCH_ROCM_ARCH=gfx1100 venv/bin/python rocm/build_gemv.py /opt/hq \
+    || echo "note: rocm/w4a16_gemv.cu did not build; the original W4A16 kernel will be used"
+
+# ROCm 7.2's runtime keeps two AsyncEventsLoop threads per GPU process spinning at 100% CPU under WSL2 (idle server:
+# ~420% CPU; ROCm/librocdxg#60). Upstream fixed it in ROCm 10.1 (ROCm/rocm-systems#7898), which this image does not use,
+# so rocm/rocr/ rebuilds the image's own libhsa-runtime64 with that fix backported into /opt/hq/rocr. start-rocm.sh puts
+# it first on LD_LIBRARY_PATH (HQ_ROCR_PATCH=0 turns that off). It is built only when the image's runtime comes from the
+# commit the script is cut for and only if it exports the same symbols; otherwise the stock runtime stays in use.
+RUN WORK=/tmp/rocr-build OUT=/opt/hq/rocr bash rocm/rocr/build_rocr.sh \
+    || { echo "note: patched ROCr runtime not built; the stock runtime (idle CPU ~4 cores under WSL2) stays in use"; rm -rf /opt/hq/rocr /tmp/rocr-build; }
+
+# HOME is a volume: torch.compile cache (~/.cache/vllm), Triton (~/.triton), HF hub cache.
+RUN mkdir -p /cache /app/models && chmod 1777 /cache
+ENV HOME=/cache VLLM_NO_USAGE_STATS=1 DO_NOT_TRACK=1 HF_XET_HIGH_PERFORMANCE=1
+VOLUME ["/cache", "/app/models"]
+EXPOSE 19020
+# The base image's entrypoint is `vllm serve`; this one is the repo's, like the NVIDIA image.
+ENTRYPOINT ["bash", "docker/entrypoint.sh"]
+CMD ["rocm"]

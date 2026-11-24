@@ -1,0 +1,7 @@
+services:
+  rocm:
+    environment:
+      HQ_TIMING: "1"
+      PYTHONPATH: /opt/hqtiming
+    volumes:
+      - E:\git\HyperQwen-7900XTX\scripts\hqtiming:/opt/hqtiming:ro

@@ -1,0 +1,385 @@
+ Image hyperqwen-rocm:local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 981B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile.rocm
+#2 transferring dockerfile: 6.27kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/vllm/vllm-openai-rocm:v0.33.0-rocm72
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 543B done
+#4 DONE 0.0s
+
+#5 [ 1/10] FROM docker.io/vllm/vllm-openai-rocm:v0.33.0-rocm72
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 87.54kB 0.0s done
+#6 DONE 0.0s
+
+#7 [ 3/10] RUN curl -fsSL -o /tmp/rocdxg.deb "https://github.com/ROCm/librocdxg/releases/download/v1.2.2/rocdxg-roct_1.2.2_amd64.deb"     && echo "28ded1254811192ebace1f76c0227580184af7b27ab2475fb9728295a702d541  /tmp/rocdxg.deb" | sha256sum -c -     && dpkg -i /tmp/rocdxg.deb && rm /tmp/rocdxg.deb && ldconfig
+#7 CACHED
+
+#8 [ 2/10] RUN for t in patch flock curl; do command -v "$t" >/dev/null || NEED="$NEED $t"; done;     if [ -n "${NEED:-}" ]; then apt-get update && apt-get install -y --no-install-recommends patch util-linux curl ca-certificates       && rm -rf /var/lib/apt/lists/*; fi
+#8 CACHED
+
+#9 [ 4/10] WORKDIR /app
+#9 CACHED
+
+#10 [ 5/10] RUN python3 -m venv --system-site-packages --without-pip venv     && ln -sf "$(command -v vllm)" venv/bin/vllm     && { command -v hf >/dev/null && ln -sf "$(command -v hf)" venv/bin/hf || echo "note: no hf CLI in the base image"; }     && venv/bin/python -c 'import vllm, torch; print("venv sees vllm", vllm.__version__, "torch", torch.__version__, "hip", torch.version.hip)'
+#10 CACHED
+
+#11 [ 6/10] COPY . .
+#11 DONE 0.1s
+
+#12 [ 7/10] RUN set -e; SP=$(venv/bin/python -c 'import vllm, os; print(os.path.dirname(vllm.__file__))' | tail -n1);     bash patches/apply.sh "$SP";     bash kvarn/install.sh;     bash verify.sh --install;     venv/bin/python bench/test_draft_vocab_stats.py;     venv/bin/python bench/test_gdn_checkpoint_safety.py;     venv/bin/python bench/test_gdn_multi_checkpoint.py;     venv/bin/python bench/test_gdn_checkpoint_export.py;     venv/bin/python bench/test_offload_mamba_swa_boundaries.py;     venv/bin/python bench/test_dflash_context_capacity.py;     venv/bin/python bench/mq3d_scratch_pool_test.py;     CUDA_VISIBLE_DEVICES= HIP_VISIBLE_DEVICES= venv/bin/python bench/test_async_mamba_kv_sizing.py;     CUDA_VISIBLE_DEVICES= HIP_VISIBLE_DEVICES= venv/bin/python bench/test_kv_cache_seat_budget.py;     CUDA_VISIBLE_DEVICES= HIP_VISIBLE_DEVICES= venv/bin/python bench/test_continuous_stream_usage.py;     venv/bin/python bench/test_gdn_ba_lora.py
+#12 0.476 W1120 23:58:13.257170       7 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 0.476 W1120 23:58:13.257680       7 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 3.529 == qwen3_5-embed-quant.patch
+#12 3.531 == marlin-int8-layer-select.patch
+#12 3.533 == marlin-int8-negative-scales.patch
+#12 3.536 == qwen3_5-mtp-draft-vocab.patch
+#12 3.538 == vllm-pr50021-gdn-spec-bounds.patch
+#12 3.541 == sampler-small-topk-fast-softmax.patch
+#12 3.544 == spec-decode-attn.patch
+#12 3.547 == speed-knobs-envs.patch
+#12 3.549 == hybrid-kv-groups-v2-cudagraph.patch
+#12 3.552 == dflash2-lookup-drafting.patch
+#12 3.555 == hybrid-sw-block-promote.patch
+#12 3.558 == spec-decode-int8-kv.patch
+#12 3.560 == vision-tower-cpu-offload.patch
+#12 3.563 == int4-kv-per-token-head.patch
+#12 3.565 == marlin-repack-staged-sm80.patch
+#12 3.568 == offload-dflash-eagle-groups.patch
+#12 3.570 == dflash2-ngram-chains.patch
+#12 3.572 == offload-wsl2-devptr.patch
+#12 3.575 == spec-decode-int4-kv-mq3d.patch
+#12 3.577 == dflash2-prewarm.patch
+#12 3.579 == marlin-tune-table.patch
+#12 3.583 == prefill-attn-int8.patch
+#12 3.585 == spec-sampler-prewarm.patch
+#12 3.588 == mamba-align-checkpoint-order.patch
+#12 3.591 == spec-decode-scratch-token-units.patch
+#12 3.593 == mamba-chunked-prefill-align.patch
+#12 3.595 == spec-decode-scratch-within-budget.patch
+#12 3.598 == dflash2-z-adaptive-emitted.patch
+#12 3.601 == dspark-draft-quant-config.patch
+#12 3.603 == engine-completion-log.patch
+#12 3.606 == engine-stall-sentinel.patch (1 hunk(s) at an offset)
+#12 3.609 == triton-spec-attn-fp8-kv.patch (1 hunk(s) at an offset)
+#12 3.612 == topk-honour-flashinfer-sampler-switch.patch
+#12 3.614 == memory-profile-after-warmup.patch
+#12 3.617 == cudagraph-memory-from-allocator.patch
+#12 3.620 == bench-probe-errors.patch
+#12 3.622 == serve-model-path-match.patch
+#12 3.625 == tokenize-v1-route.patch
+#12 3.627 == marlin-int8-asym-zp.patch
+#12 3.629 == compile-key-runtime-knobs.patch (1 hunk(s) at an offset)
+#12 3.632 == auth-deny-default.patch
+#12 3.634 == spec-attn-smem-fit.patch
+#12 3.637 == bench-sse-keepalive.patch
+#12 3.639 == sampler-warmup-cuda.patch
+#12 3.642 == pinned-kv-empty-cache.patch
+#12 3.644 == api-root-health.patch
+#12 3.647 == qwen3_5-embed-uva.patch (1 hunk(s) at an offset)
+#12 3.652 == vllm-pr40371-prompt-progress.patch
+#12 3.654 == kv-cache-seat-budget.patch
+#12 3.657 == gdn-ba-pad-small-m.patch (1 hunk(s) at an offset)
+#12 3.660 == vllm-pr61612-flashinfer-async-barrier.patch
+#12 3.663 == quant-scale-view-preserve-pages.patch
+#12 3.665 == dflash-context-capacity.patch
+#12 3.669 == async-mamba-kv-sizing.patch (2 hunk(s) at an offset)
+#12 3.671 == continuous-stream-usage.patch
+#12 3.674 == offload-mamba-swa-replay-boundaries.patch
+#12 3.677 == vllm-pr64137-logits-stats-no-specialize.patch
+#12 3.681 == gdn-multi-prefill-checkpoints.patch
+#12 3.683 == vllm-pr66026-gather-draft-sampled-no-specialize.patch
+#12 3.686 == dflash2-fp16-residual-scale.patch (2 hunk(s) at an offset)
+#12 3.689 == spec-attn-fp16.patch
+#12 3.692 == flashinfer-sm75-optin.patch (2 hunk(s) at an offset)
+#12 3.695 == flashinfer-sm75-spec-graphs.patch (2 hunk(s) at an offset)
+#12 3.698 == gdn-sm75-cuda-prefill.patch
+#12 3.702 == terminal-request-progress.patch (3 hunk(s) at an offset)
+#12 3.704 == rocm-w4a16-gemv.patch
+#12 6.873 == kvarn-0.33.0.patch (2 hunk(s) at an offset)
+#12 6.878 == kvarn-v2-runner-0.33.0.patch (2 hunk(s) at an offset)
+#12 6.883 == kvarn-recycled-pages-0.33.0.patch (1 hunk(s) at an offset)
+#12 6.886 == kvarn-fp16-dequant-0.33.0.patch (2 hunk(s) at an offset)
+#12 7.290 W1120 23:58:20.070779    1575 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 7.290 W1120 23:58:20.070825    1575 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 9.269 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 9.269   raw_cnt = _raw_device_count_amdsmi()
+#12 9.271 Using 'pin_memory=False' as WSL is detected. This may slow down performance.
+#12 10.53 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 10.53   raw_cnt = _raw_device_count_amdsmi()
+#12 13.01 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 13.01   raw_cnt = _raw_device_count_amdsmi()
+#12 13.59 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 13.59   raw_cnt = _raw_device_count_amdsmi()
+#12 13.86 KVarN backend: KVARN
+#12 13.86 tile bytes 26880 -> per token per head 210 B (fp8: 256 B)
+#12 14.81 kvarn installed
+#12 14.81 == environment
+#12 14.81   PASS  python: /app/venv/bin/python
+#12 17.54   PASS  vllm 0.33.0
+#12 20.27   PASS  vllm package at /usr/local/lib/python3.12/dist-packages/vllm
+#12 20.36   PASS  python module triton
+#12 24.72   PASS  python module compressed_tensors
+#12 25.93   PASS  ROCm build of torch: FlashInfer is not used (TRITON_ATTN and the ROCm kernels; docs/rocm.md)
+#12 25.93 == vLLM patches (order: patches/series)
+#12 26.01   PASS  patches/series lists all 66 patches
+#12 26.02   PASS  qwen3_5-embed-quant.patch applied (content check; hunks overlap another patch)
+#12 26.02   PASS  marlin-int8-layer-select.patch applied
+#12 26.02   PASS  marlin-int8-negative-scales.patch applied
+#12 26.02   PASS  qwen3_5-mtp-draft-vocab.patch applied
+#12 26.02   PASS  vllm-pr50021-gdn-spec-bounds.patch applied
+#12 26.02   PASS  sampler-small-topk-fast-softmax.patch applied
+#12 26.03   PASS  spec-decode-attn.patch applied (content check; hunks overlap another patch)
+#12 26.04   PASS  speed-knobs-envs.patch applied (content check; hunks overlap another patch)
+#12 26.04   PASS  hybrid-kv-groups-v2-cudagraph.patch applied
+#12 26.05   PASS  dflash2-lookup-drafting.patch applied (content check; hunks overlap another patch)
+#12 26.05   PASS  hybrid-sw-block-promote.patch applied
+#12 26.06   PASS  spec-decode-int8-kv.patch applied (content check; hunks overlap another patch)
+#12 26.07   PASS  vision-tower-cpu-offload.patch applied
+#12 26.07   PASS  int4-kv-per-token-head.patch applied
+#12 26.07   PASS  marlin-repack-staged-sm80.patch applied
+#12 26.07   PASS  offload-dflash-eagle-groups.patch applied
+#12 26.08   PASS  dflash2-ngram-chains.patch applied (content check; hunks overlap another patch)
+#12 26.08   PASS  offload-wsl2-devptr.patch applied
+#12 26.09   PASS  spec-decode-int4-kv-mq3d.patch applied (content check; hunks overlap another patch)
+#12 26.09   PASS  dflash2-prewarm.patch applied
+#12 26.09   PASS  marlin-tune-table.patch applied
+#12 26.09   PASS  prefill-attn-int8.patch applied
+#12 26.09   PASS  spec-sampler-prewarm.patch applied
+#12 26.10   PASS  mamba-align-checkpoint-order.patch applied (content check; hunks overlap another patch)
+#12 26.13   PASS  spec-decode-scratch-token-units.patch applied (superseded by spec-decode-scratch-within-budget.patch, which is applied)
+#12 26.13   PASS  mamba-chunked-prefill-align.patch applied
+#12 26.13   PASS  spec-decode-scratch-within-budget.patch applied
+#12 26.13   PASS  dflash2-z-adaptive-emitted.patch applied
+#12 26.13   PASS  dspark-draft-quant-config.patch applied
+#12 26.13   PASS  engine-completion-log.patch applied
+#12 26.14   PASS  engine-stall-sentinel.patch applied
+#12 26.15   PASS  triton-spec-attn-fp8-kv.patch applied (content check; hunks overlap another patch)
+#12 26.15   PASS  topk-honour-flashinfer-sampler-switch.patch applied
+#12 26.15   PASS  memory-profile-after-warmup.patch applied
+#12 26.15   PASS  cudagraph-memory-from-allocator.patch applied
+#12 26.15   PASS  bench-probe-errors.patch applied
+#12 26.15   PASS  serve-model-path-match.patch applied
+#12 26.15   PASS  tokenize-v1-route.patch applied
+#12 26.15   PASS  marlin-int8-asym-zp.patch applied
+#12 26.15   PASS  compile-key-runtime-knobs.patch applied
+#12 26.16   PASS  auth-deny-default.patch applied (content check; hunks overlap another patch)
+#12 26.17   PASS  spec-attn-smem-fit.patch applied (content check; hunks overlap another patch)
+#12 26.17   PASS  bench-sse-keepalive.patch applied
+#12 26.17   PASS  sampler-warmup-cuda.patch applied
+#12 26.17   PASS  pinned-kv-empty-cache.patch applied
+#12 26.17   PASS  api-root-health.patch applied
+#12 26.18   PASS  qwen3_5-embed-uva.patch applied
+#12 26.18   PASS  vllm-pr40371-prompt-progress.patch applied
+#12 26.18   PASS  kv-cache-seat-budget.patch applied
+#12 26.18   PASS  gdn-ba-pad-small-m.patch applied
+#12 26.18   PASS  vllm-pr61612-flashinfer-async-barrier.patch applied
+#12 26.18   PASS  quant-scale-view-preserve-pages.patch applied
+#12 26.18   PASS  dflash-context-capacity.patch applied
+#12 26.19   PASS  async-mamba-kv-sizing.patch applied (content check; hunks overlap another patch)
+#12 26.19   PASS  continuous-stream-usage.patch applied
+#12 26.19   PASS  offload-mamba-swa-replay-boundaries.patch applied
+#12 26.20   PASS  vllm-pr64137-logits-stats-no-specialize.patch applied
+#12 26.21   PASS  gdn-multi-prefill-checkpoints.patch applied (content check; hunks overlap another patch)
+#12 26.21   PASS  vllm-pr66026-gather-draft-sampled-no-specialize.patch applied
+#12 26.22   PASS  dflash2-fp16-residual-scale.patch applied (content check; hunks overlap another patch)
+#12 26.22   PASS  spec-attn-fp16.patch applied
+#12 26.23   PASS  flashinfer-sm75-optin.patch applied (content check; hunks overlap another patch)
+#12 26.24   PASS  flashinfer-sm75-spec-graphs.patch applied (content check; hunks overlap another patch)
+#12 26.25   PASS  gdn-sm75-cuda-prefill.patch applied (content check; hunks overlap another patch)
+#12 26.25   PASS  terminal-request-progress.patch applied
+#12 26.25   PASS  rocm-w4a16-gemv.patch applied
+#12 28.86   PASS  int8 layer-select env vars registered in envs.py (live registry)
+#12 28.86 == KVarN (optional, kvarn/)
+#12 28.87   PASS  the KVARN list in patches/apply.sh names all 4 kvarn/ patches
+#12 28.87   PASS  kvarn-0.33.0.patch applied
+#12 28.88   PASS  kvarn-v2-runner-0.33.0.patch applied (SPEC=dflash2 + CTX=huge available)
+#12 28.88   PASS  kvarn-recycled-pages-0.33.0.patch applied (no late KVarN flush into mamba state, #208)
+#12 28.88   PASS  kvarn-fp16-dequant-0.33.0.patch applied (KVARN_FP16_DEQUANT registered in envs.py)
+#12 34.70   PASS  KVarN backend importable (KV=kvarn / CTX=huge available)
+#12 34.70 == fp8-KV FA2 (optional, fa2/)
+#12 34.71   INFO  fa2_fp8kv_vllm not installed (optional; bash fa2/install.sh for FA2_FP8KV=1)
+#12 34.71 
+#12 34.71 verify: OK (0 failures)
+#12 37.84 ...W1120 23:59:01.861365    1995 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 49.08 W1120 23:59:01.861403    1995 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 52.95 ...
+#12 59.16 ----------------------------------------------------------------------
+#12 59.16 Ran 6 tests in 22.549s
+#12 59.16 
+#12 59.16 OK
+#12 59.51 ............
+#12 59.51 ----------------------------------------------------------------------
+#12 59.51 Ran 12 tests in 0.024s
+#12 59.51 
+#12 59.51 OK
+#12 59.74 W1120 23:59:12.519707    2068 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 59.74 W1120 23:59:12.519745    2068 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 61.63 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 61.63   raw_cnt = _raw_device_count_amdsmi()
+#12 61.64 Using 'pin_memory=False' as WSL is detected. This may slow down performance.
+#12 62.95 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 62.95   raw_cnt = _raw_device_count_amdsmi()
+#12 63.47 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 63.47   raw_cnt = _raw_device_count_amdsmi()
+#12 64.04 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 64.04   raw_cnt = _raw_device_count_amdsmi()
+#12 64.42 {"outputs_identical": true, "enabled_hit": 768, "off_hit": 0, "enabled_only_hit": true, "cold_seconds_on_off": [1.0, 1.0], "divergence_seconds_on_off": [1.0, 1.0], "cold_peak_allocated_bytes_on_off": [42, 42]}
+#12 64.42 ..{"outputs_identical": true, "enabled_hit": 768, "off_hit": 768, "enabled_only_hit": false, "cold_seconds_on_off": [1.0, 1.0], "divergence_seconds_on_off": [1.0, 1.0], "cold_peak_allocated_bytes_on_off": [42, 42]}
+#12 64.42 ../app/bench/test_gdn_multi_checkpoint.py:34: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+#12 64.43   return torch.tensor(values, dtype=dtype, device=device)
+#12 64.46 .....
+#12 64.46 ----------------------------------------------------------------------
+#12 64.46 Ran 9 tests in 0.042s
+#12 64.46 
+#12 64.46 OK
+#12 65.67 W1120 23:59:18.454862    2093 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 65.67 W1120 23:59:18.454907    2093 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 67.58 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 67.58   raw_cnt = _raw_device_count_amdsmi()
+#12 67.59 Using 'pin_memory=False' as WSL is detected. This may slow down performance.
+#12 68.87 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 68.87   raw_cnt = _raw_device_count_amdsmi()
+#12 69.42 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 69.42   raw_cnt = _raw_device_count_amdsmi()
+#12 70.21 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 70.21   raw_cnt = _raw_device_count_amdsmi()
+#12 70.79 ss.../app/bench/test_gdn_checkpoint_export.py:80: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+#12 70.80   return torch.tensor(values, dtype=dtype, device=device)
+#12 70.80 ../app/bench/test_gdn_checkpoint_export.py:52: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+#12 70.80   lambda values, dtype=None, device=None: torch.tensor(
+#12 70.80 /app/bench/test_gdn_checkpoint_export.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+#12 70.80   lambda values, dtype=None, device=None: torch.tensor(
+#12 70.80 ..
+#12 70.80 ----------------------------------------------------------------------
+#12 70.80 Ran 9 tests in 0.006s
+#12 70.80 
+#12 70.80 OK (skipped=2)
+#12 72.12 W1120 23:59:24.902817    2120 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 72.12 W1120 23:59:24.902858    2120 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 74.09 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 74.09   raw_cnt = _raw_device_count_amdsmi()
+#12 74.09 Using 'pin_memory=False' as WSL is detected. This may slow down performance.
+#12 75.37 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 75.37   raw_cnt = _raw_device_count_amdsmi()
+#12 75.88 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 75.88   raw_cnt = _raw_device_count_amdsmi()
+#12 76.40 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 76.40   raw_cnt = _raw_device_count_amdsmi()
+#12 76.68 ...
+#12 76.70 ----------------------------------------------------------------------
+#12 76.70 Ran 3 tests in 0.025s
+#12 76.70 
+#12 76.70 OK
+#12 77.87 W1120 23:59:30.655414    2145 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 77.87 W1120 23:59:30.655452    2145 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 81.80 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 81.80   raw_cnt = _raw_device_count_amdsmi()
+#12 81.80 Using 'pin_memory=False' as WSL is detected. This may slow down performance.
+#12 83.08 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 83.08   raw_cnt = _raw_device_count_amdsmi()
+#12 83.59 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 83.59   raw_cnt = _raw_device_count_amdsmi()
+#12 83.60 .....
+#12 83.61 ----------------------------------------------------------------------
+#12 83.61 Ran 5 tests in 0.005s
+#12 83.61 
+#12 83.61 OK
+#12 84.69 W1120 23:59:37.468944    2162 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 84.69 W1120 23:59:37.468985    2162 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 86.63 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 86.63   raw_cnt = _raw_device_count_amdsmi()
+#12 86.66 Using 'pin_memory=False' as WSL is detected. This may slow down performance.
+#12 88.07 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 88.07   raw_cnt = _raw_device_count_amdsmi()
+#12 88.59 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 88.59   raw_cnt = _raw_device_count_amdsmi()
+#12 89.11 /usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:1086: UserWarning: Can't initialize amdsmi - Error code: 34
+#12 89.11   raw_cnt = _raw_device_count_amdsmi()
+#12 89.50 POOL UNIT TEST OK: 9 assertions
+#12 89.50 NEGATIVE CONTROL (exclusive=False on the second builder shares): True
+#12 90.70 W1120 23:59:43.482695    2187 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 90.70 W1120 23:59:43.482739    2187 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 92.76 Using 'pin_memory=False' as WSL is detected. This may slow down performance.
+#12 95.41 test_async_depth_accounts_for_inflight_states (__main__.SizingTests.test_async_depth_accounts_for_inflight_states) ... ok
+#12 95.41 test_auto_fit_uses_whole_blocks_and_restores_config (__main__.SizingTests.test_auto_fit_uses_whole_blocks_and_restores_config) ... ok
+#12 95.42 test_boundary_budget_accepts_exactly_219_blocks (__main__.SizingTests.test_boundary_budget_accepts_exactly_219_blocks) ... ok
+#12 95.43 test_engine_startup_builds_the_223_block_pool (__main__.SizingTests.test_engine_startup_builds_the_223_block_pool) ... ok
+#12 95.44 test_engine_startup_rejects_small_pool_and_small_override (__main__.SizingTests.test_engine_startup_rejects_small_pool_and_small_override) ... ok
+#12 95.45 test_internal_checkpoint_reservation_is_additive (__main__.SizingTests.test_internal_checkpoint_reservation_is_additive) ... ok
+#12 95.45 test_legacy_admission_uses_group_padding_and_async_peak (__main__.SizingTests.test_legacy_admission_uses_group_padding_and_async_peak) ... ok
+#12 95.46 test_no_gpu_initialized (__main__.SizingTests.test_no_gpu_initialized) ... ok
+#12 95.46 test_no_speculation_still_accounts_for_async_overlap (__main__.SizingTests.test_no_speculation_still_accounts_for_async_overlap) ... ok
+#12 95.46 test_non_align_modes_preserve_original_sizing (__main__.SizingTests.test_non_align_modes_preserve_original_sizing) ... ok
+#12 95.46 test_null_block_is_unavailable_even_for_full_attention_only (__main__.SizingTests.test_null_block_is_unavailable_even_for_full_attention_only) ... ok
+#12 95.46 test_old_six_gib_budget_fails_admission (__main__.SizingTests.test_old_six_gib_budget_fails_admission) ... ok
+#12 95.47 test_pool_with_only_null_block_has_zero_capacity (__main__.SizingTests.test_pool_with_only_null_block_has_zero_capacity) ... ok
+#12 95.47 test_real_allocator_reproduces_all_99_snapshots (__main__.SizingTests.test_real_allocator_reproduces_all_99_snapshots) ... ok
+#12 95.47 test_tested_budget_has_four_spare_blocks (__main__.SizingTests.test_tested_budget_has_four_spare_blocks) ... ok
+#12 95.48 test_worker_and_scheduler_capacity_agree (__main__.SizingTests.test_worker_and_scheduler_capacity_agree) ... ok
+#12 95.48 
+#12 95.48 ----------------------------------------------------------------------
+#12 95.48 Ran 16 tests in 0.070s
+#12 95.48 
+#12 95.48 OK
+#12 96.67 W1120 23:59:49.455830    2212 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 96.67 W1120 23:59:49.455866    2212 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 98.55 Using 'pin_memory=False' as WSL is detected. This may slow down performance.
+#12 101.2 .........
+#12 101.3 ----------------------------------------------------------------------
+#12 101.3 Ran 9 tests in 0.113s
+#12 101.3 
+#12 101.3 OK
+#12 102.5 W1120 23:59:55.266818    2411 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 102.5 W1120 23:59:55.266861    2411 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 104.7 Using 'pin_memory=False' as WSL is detected. This may slow down performance.
+#12 107.4 test_continuous_usage_advances_during_buffered_array (__main__.StreamingUsageTests.test_continuous_usage_advances_during_buffered_array) ... ok
+#12 107.4 test_final_usage_only_contract_is_preserved (__main__.StreamingUsageTests.test_final_usage_only_contract_is_preserved) ... ok
+#12 107.5 test_hidden_reasoning_keeps_telemetry_without_leaking_text_or_ids (__main__.StreamingUsageTests.test_hidden_reasoning_keeps_telemetry_without_leaking_text_or_ids) ... ok
+#12 107.5 test_no_usage_contract_is_preserved (__main__.StreamingUsageTests.test_no_usage_contract_is_preserved) ... ok
+#12 107.5 
+#12 107.5 ----------------------------------------------------------------------
+#12 107.5 Ran 4 tests in 0.179s
+#12 107.5 
+#12 107.5 OK
+#12 108.9 W1121 00:00:01.699489    2437 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#12 108.9 W1121 00:00:01.699523    2437 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#12 109.7 ...
+#12 109.9 ----------------------------------------------------------------------
+#12 109.9 Ran 3 tests in 0.247s
+#12 109.9 
+#12 109.9 OK
+#12 DONE 110.3s
+
+#13 [ 8/10] RUN PYTORCH_ROCM_ARCH=gfx1100 venv/bin/python rocm/build_gemv.py /opt/hq     || echo "note: rocm/w4a16_gemv.cu did not build; the original W4A16 kernel will be used"
+#13 0.437 W1121 00:00:03.538213       6 agent.cpp:352] agent topology: no platform matched; falling back to gnulinux-kfd (will return empty)
+#13 0.437 W1121 00:00:03.538256       6 agent.cpp:452] sysfs nodes path '/sys/class/kfd/kfd/topology/nodes' does not exist
+#13 1.285 [92mSuccessfully preprocessed all matching files.[0m
+#13 28.47 /opt/hq/w4a16_gemv.so
+#13 DONE 28.8s
+
+#14 [ 9/10] RUN WORK=/tmp/rocr-build OUT=/opt/hq/rocr bash rocm/rocr/build_rocr.sh     || { echo "note: patched ROCr runtime not built; the stock runtime (idle CPU ~4 cores under WSL2) stays in use"; rm -rf /opt/hq/rocr /tmp/rocr-build; }
+#14 17.50 rocr: patched libhsa-runtime64 staged in /opt/hq/rocr (commit af70edc, backport ROCm/rocm-systems#7898)
+#14 DONE 17.5s
+
+#15 [10/10] RUN mkdir -p /cache /app/models && chmod 1777 /cache
+#15 DONE 0.2s
+
+#16 exporting to image
+#16 exporting layers 0.1s done
+#16 writing image sha256:1f857116e37ac357585baf4dc4fe9b05353ed3a6eca0fe079a5663281069f23f done
+#16 naming to docker.io/library/hyperqwen-rocm:local done
+#16 DONE 0.1s
+
+#17 resolving provenance for metadata file
+#17 DONE 0.0s
+ Image hyperqwen-rocm:local Built 

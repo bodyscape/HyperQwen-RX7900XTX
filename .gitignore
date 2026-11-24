@@ -1,0 +1,29 @@
+# Modèles et gros outils : trop gros pour git (et exllamav3 / llama-vulkan sont des essais hors vLLM)
+/exllamav3/
+/llama-vulkan/
+/hyperqwen/models/
+
+# Réglages locaux de la machine (adresse IP, etc.) : on ne versionne que les exemples
+.env
+.env.*
+!.env.example
+!.env.rocm.example
+
+# Compilations (se refont avec les scripts de build)
+/octave-noyau/build/
+/rocr-patch/build-rocr/
+/rocr-patch/out/
+
+# Python, sauvegardes de fichiers modèle
+__pycache__/
+*.pyc
+*.bak-*
+
+# Binaires compilés
+*.so
+*.o
+/scripts/gemm/build*/
+
+# Lanceurs locaux de la machine
+/start-hyperqwen.*
+/stop-hyperqwen.*

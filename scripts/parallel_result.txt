@@ -1,0 +1,10 @@
+﻿--- 7900 XTX (MAX_SEQS=8):
+ROW cohort C1 real prompts T=default | e2e=99.30 tok/s | decode(C/meanTPOT)=102.0 | tok/step=2.56 | meanTTFT=224.30 ms
+ROW cohort C2 real prompts T=default | e2e=145.72 tok/s | decode(C/meanTPOT)=161.2 | tok/step=2.54 | meanTTFT=273.09 ms
+ROW cohort C4 real prompts T=default | e2e=170.26 tok/s | decode(C/meanTPOT)=193.8 | tok/step=2.52 | meanTTFT=400.66 ms
+ROW cohort C8 real prompts T=default | e2e=184.28 tok/s | decode(C/meanTPOT)=263.3 | tok/step=2.56 | meanTTFT=3512.54 ms
+ROW cohort C1 real prompts T=0 | e2e=103.81 tok/s | decode(C/meanTPOT)=107.3 | tok/step=2.64 | meanTTFT=222.35 ms
+ROW cohort C2 real prompts T=0 | e2e=148.44 tok/s | decode(C/meanTPOT)=164.9 | tok/step=2.59 | meanTTFT=270.72 ms
+ROW cohort C4 real prompts T=0 | e2e=170.35 tok/s | decode(C/meanTPOT)=194.6 | tok/step=2.52 | meanTTFT=398.98 ms
+ROW cohort C8 real prompts T=0 | e2e=195.42 tok/s | decode(C/meanTPOT)=269.4 | tok/step=2.60 | meanTTFT=3147.00 ms
+--- RTX 3090:
